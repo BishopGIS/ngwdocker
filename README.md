@@ -28,9 +28,10 @@ Generate dockerfile from mako template and run Docker Compose:
 
     $ mako-render Dockerfile.mako > Dockerfile
     $ docker-compose build
+    $ docker-compose create
 
 Build python *.egginfo files for `nextgisweb_*` packages:
-    
+
     $ docker-compose run shell /src/util/egginfo
 
 Initialize database structure:

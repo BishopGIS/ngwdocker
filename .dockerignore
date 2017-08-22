@@ -5,7 +5,6 @@ Dockerfile.mako
 docker-compose.yaml
 package/*/.git
 package/*/doc
-package/*/docker
 package/*/*.egg-info
 package/**/*.pyc
 package/**/*.mo

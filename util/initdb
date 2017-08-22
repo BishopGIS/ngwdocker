@@ -1,0 +1,5 @@
+#!/bin/bash
+set -e
+cd /src
+source /env/bin/activate
+nextgisweb --config /src/config/config.ini initialize_db

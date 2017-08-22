@@ -1,6 +1,6 @@
 <%
 import os, os.path
-packages = sorted(os.listdir('package'))
+packages = sorted(filter(os.path.isdir, os.listdir('package')))
 %>
 
 FROM ubuntu:16.04

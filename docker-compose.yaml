@@ -1,0 +1,30 @@
+version: '3.2'
+services:
+
+  pserve:
+    build:
+      context: .
+    command: /env/bin/pserve --reload /src/config/pserve.ini
+    depends_on: 
+      - postgres
+    volumes:
+      - .:/src
+      - data:/data
+    ports:
+      - "20080:20080"
+
+  shell:
+    build:
+      context: .
+    command: /bin/bash --rcfile /src/util/bashrc
+    depends_on: 
+      - postgres
+    volumes:
+      - .:/src
+      - data:/data
+
+  postgres:
+    image: mdillon/postgis
+
+volumes:
+  data:

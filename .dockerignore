@@ -1,0 +1,4 @@
+.git
+Dockerfile
+Dockerfile.mako
+package/*/.git

@@ -1,0 +1,2 @@
+cd /src
+source /env/bin/activate

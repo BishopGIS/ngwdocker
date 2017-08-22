@@ -5,7 +5,7 @@ NextGIS Web Docker Environment
 
 * Docker CE >= 17.06
 * Docker Compose >= 1.14
-* Package mako-render
+* Package python-mako (provides `mako-render` command)
 
 ## Installation
 

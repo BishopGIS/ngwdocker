@@ -9,6 +9,13 @@ NextGIS Web Docker Environment
 
 ## Installation
 
+Check that Docker installed and configured correctly:
+
+    $ docker run hello-world
+    Hello from Docker!
+    This message shows that your installation appears to be working correctly.
+    ...(snipped)...
+
 Clone this repository:
 
     $ git clone git@github.com:nextgis/ngwdocker.git

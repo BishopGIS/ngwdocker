@@ -2,6 +2,7 @@
 import os, os.path, collections
 packages = sorted(filter(lambda p: os.path.isdir(os.path.join('package', p)), os.listdir('package')))
 pdict = collections.OrderedDict()
+debpackages = ['git', 'mc', 'build-essential', 'python-dev', 'python-virtualenv']
 for p in packages:
     obj = collections.OrderedDict()
     pdict[p] = obj
@@ -12,13 +13,16 @@ for p in packages:
     obj['build_path'] = os.path.join('build', p)
     obj['requirements'] = os.path.isfile(os.path.join(dpath, 'requirements'))
     obj['envsetup'] = os.path.isfile(os.path.join(dpath, 'include'))
+
+    dpfile = os.path.join(dpath, 'debpackages')
+    if os.path.isfile(dpfile):
+        with open(dpfile, 'r') as fd:
+            debpackages.append(fd.read())
 %>
 
 FROM ubuntu:16.04
 
-RUN apt-get update && apt-get install -y \
-    git mc build-essential python-dev python-virtualenv \
-    libgdal-dev g++ libxml2-dev libxslt1-dev gdal-bin libgeos-dev zlib1g-dev libjpeg-turbo8-dev
+RUN apt-get update && apt-get install -y  ${' '.join(debpackages)}
 
 RUN /usr/bin/virtualenv /env && /env/bin/pip install --upgrade pip
 

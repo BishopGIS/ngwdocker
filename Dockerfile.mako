@@ -2,6 +2,7 @@
 import os, os.path, collections
 packages = sorted(filter(lambda p: os.path.isdir(os.path.join('package', p)), os.listdir('package')))
 pdict = collections.OrderedDict()
+prepfiles = []
 debpackages = ['git', 'mc', 'build-essential', 'python-dev', 'python-virtualenv']
 for p in packages:
     obj = collections.OrderedDict()
@@ -12,7 +13,13 @@ for p in packages:
     obj['source_path'] = dpath
     obj['build_path'] = os.path.join('build', p)
     obj['requirements'] = os.path.isfile(os.path.join(dpath, 'requirements'))
-    obj['envsetup'] = os.path.isfile(os.path.join(dpath, 'include'))
+    obj['envsetup'] = os.path.isfile(os.path.join(dpath, 'envsetup.dockerfile'))
+
+    pdfile = os.path.join(dpath, 'prepeare.dockerfile')
+    if os.path.isfile(pdfile):
+        with open(pdfile, 'r') as fd:
+            prepfiles.append('# Package ' + p)
+            prepfiles.append(fd.read())
 
     dpfile = os.path.join(dpath, 'debpackages')
     if os.path.isfile(dpfile):
@@ -21,26 +28,28 @@ for p in packages:
 %>
 
 FROM ubuntu:16.04
+RUN mkdir /build /src /src/package
 
+${'\n'.join(prepfiles)}
+
+# Update repositories & install packages
 RUN apt-get update && apt-get install -y  ${' '.join(debpackages)}
 
+# Setup virtualenv
 RUN /usr/bin/virtualenv /env && /env/bin/pip install --upgrade pip
 
-RUN mkdir /build
-
 %for package, pdef in pdict.iteritems():
-# ${package}
+# Package ${package}
 ADD ${pdef['source_path']} ${pdef['build_path']}
 %if pdef['requirements']:
 RUN /env/bin/pip install -r ${pdef['build_path']}/requirements
 %endif
 %if pdef['envsetup']:
-<% with open(os.path.join(pdef['source_path'], 'include'), 'r') as fd: inccont = fd.read() %>${inccont}
+<% with open(os.path.join(pdef['source_path'], 'envsetup.dockerfile'), 'r') as fd: inccont = fd.read() %>${inccont}
 %endif
 
 %endfor
 
-RUN mkdir --parents /src/package && touch /build/package
 ADD ./package /src/package
 
 %for package in packages:

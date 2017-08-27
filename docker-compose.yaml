@@ -19,6 +19,7 @@ services:
     command: /bin/bash --rcfile /src/util/bashrc
     environment:
       - NEXTGISWEB_CONFIG=/src/config/config.ini
+      - NEXTGISWEB_LOGGING=/src/config/logging.ini
       - LC_ALL=C.UTF-8
     depends_on: 
       - postgres

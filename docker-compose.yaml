@@ -23,6 +23,7 @@ services:
       - LC_ALL=C.UTF-8
     depends_on: 
       - postgres
+      - minio
     volumes:
       - .:/src
       - data:/data
@@ -30,5 +31,17 @@ services:
   postgres:
     image: mdillon/postgis
 
+  minio:
+    image: minio/minio
+    command: server /data
+    environment:
+      - MINIO_ACCESS_KEY=default
+      - MINIO_SECRET_KEY=changeme
+    volumes:
+      - minio:/data
+    ports:
+      - 29000:9000
+
 volumes:
   data:
+  minio:

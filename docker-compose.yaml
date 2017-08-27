@@ -17,6 +17,9 @@ services:
     build:
       context: .
     command: /bin/bash --rcfile /src/util/bashrc
+    environment:
+      - NEXTGISWEB_CONFIG=/src/config/config.ini
+      - LC_ALL=C.UTF-8
     depends_on: 
       - postgres
     volumes:

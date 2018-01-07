@@ -25,9 +25,10 @@ Clone or copy `nextgisweb` to `package/` directory:
 
     $ git clone git@github.com:nextgis/nextgisweb.git package/nextgisweb
 
-Clone or copy other `nextgisweb_*` packages to same directory. For example `nextgisweb_mapserver`:
+Clone or copy other `nextgisweb_*` packages to same directory. For example `nextgisweb_mapserver` and `nextgisweb_qgis`:
 
     $ git clone git@github.com:nextgis/nextgisweb_mapserver.git package/nextgisweb_mapserver
+    $ git clone git@github.com:nextgis/nextgisweb_qgis.git package/nextgisweb_qgis
 
 Keep in mind that symlinks doesn't work here due to Docker limitations. You can use [BindFS](http://bindfs.org/) as alternative to symlinks.
 

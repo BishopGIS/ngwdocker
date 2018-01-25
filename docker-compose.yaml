@@ -5,6 +5,8 @@ services:
     build:
       context: .
     command: /env/bin/pserve --reload /src/config/pserve.ini
+    environment:
+      - LC_ALL=C.UTF-8
     depends_on: 
       - postgres
     volumes:

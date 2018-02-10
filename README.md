@@ -1,6 +1,8 @@
 NextGIS Web Docker Environment
 ==============================
 
+**SECURITY WARNING:** This environment is intended **only for testing and development** purposes. Using it in production is associated with security and performance problems.
+
 ## Requirements
 
 * Docker CE >= 17.06

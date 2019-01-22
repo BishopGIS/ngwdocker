@@ -1,6 +1,0 @@
-#!/bin/bash
-set -e
-cd /src
-source /env/bin/activate
-psql -h postgres -U postgres -c "CREATE EXTENSION IF NOT EXISTS hstore"
-nextgisweb --config /src/config/config.ini initialize_db

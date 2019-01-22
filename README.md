@@ -7,7 +7,9 @@ NextGIS Web Docker Environment
 
 * Docker CE >= 17.06
 * Docker Compose >= 1.14
-* Package python-mako (provides `mako-render` command)
+* Python 3 with:
+    * YAML library (`python3-yaml` package in Ubuntu)
+    * Click library (`python3-click` package in Ubuntu)
 
 ## Installation
 
@@ -15,7 +17,6 @@ Check that Docker installed and configured correctly:
 
     $ docker run hello-world
     Hello from Docker!
-    This message shows that your installation appears to be working correctly.
     ...(snipped)...
 
 Clone this repository:
@@ -32,25 +33,34 @@ Clone or copy other `nextgisweb_*` packages to same directory. For example `next
     $ git clone git@github.com:nextgis/nextgisweb_mapserver.git package/nextgisweb_mapserver
     $ git clone git@github.com:nextgis/nextgisweb_qgis.git package/nextgisweb_qgis
 
-Keep in mind that symlinks doesn't work here due to Docker limitations. You can use [BindFS](http://bindfs.org/) as alternative to symlinks.
+Generate `Dockerfile` and `docker-compose.yaml`:
 
-Generate dockerfile from mako template and run Docker Compose:
+    $ python3 ngwdocker.py
 
-    $ mako-render Dockerfile.mako > Dockerfile
-    $ docker-compose build
-    $ docker-compose create
+Start postgres and initialize database structure:
 
-Build python *.egginfo files for `nextgisweb_*` packages:
+    $ docker-compose up --detach postgres
+    # Wait 5-10 seconds for PostgreSQL start
+    $ docker-compose run app nextgisweb initialize_db
 
-    $ docker-compose run shell /src/util/egginfo
+Start webserver:
 
-Initialize database structure:
+    $ docker-compose up app
 
-    $ docker-compose run shell /src/util/initdb
+Go to http://localhost:8080 in browser.
 
-## Usage
+## Development mode
 
-Start pserve service and go to http://localhost:20080:
+By default package sources from `package/*` directory are copied to image and each change in sources requires image rebuild with `docker-compose build app`.
 
-    $ docker-compose start pserve
-    $ browse http://localhost:20080
+In development mode package sources mounted to container via volume. To use development mode add option to `ngwdocker.py`:
+
+    $ python3 ngwdocker.py --development
+    $ docker-compose up ...
+
+**NOTE:** To avoid problems with file ownership and permissions image build with current users UID and GID (1000 for firstly created user on Ubuntu desktop).
+
+But some changes still requires image rebuild:
+
+* Requirements changes in `setup.py`
+* Entrypoint changes in `setup.py`

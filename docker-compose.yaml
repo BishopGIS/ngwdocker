@@ -1,51 +1,23 @@
 version: '3.2'
 services:
-
-  pserve:
+  app:
     build:
       context: .
-    command: /env/bin/pserve --reload /src/config/pserve.ini
-    environment:
-      - LC_ALL=C.UTF-8
-    depends_on: 
-      - postgres
+      args:
+        uid: 1000
+        gid: 1000
+    command: pserve-development
+    depends_on:
+    - postgres
     volumes:
-      - .:/src
-      - data:/data
+    - data:/opt/ngw/data
+    - ./package:/opt/ngw/package
     ports:
-      - "20080:20080"
-
-  shell:
-    build:
-      context: .
-    command: /bin/bash --rcfile /src/util/bashrc
-    environment:
-      - NEXTGISWEB_CONFIG=/src/config/config.ini
-      - NEXTGISWEB_LOGGING=/src/config/logging.ini
-      - LC_ALL=C.UTF-8
-    depends_on: 
-      - postgres
-      - minio
-    volumes:
-      - .:/src
-      - data:/data
-
+    - 8080:8080
   postgres:
-    image: mdillon/postgis
-    ports:
-      - "25432:5432"
-
-  minio:
-    image: minio/minio
-    command: server /data
+    build:
+      context: ./postgres
     environment:
-      - MINIO_ACCESS_KEY=default
-      - MINIO_SECRET_KEY=changeme
-    volumes:
-      - minio:/data
-    ports:
-      - 29000:9000
-
+      POSTGRES_USER: ngw
 volumes:
-  data:
-  minio:
+  data: {}

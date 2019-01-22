@@ -1,8 +1,8 @@
 .git
 .dockerignore
 Dockerfile
-Dockerfile.mako
 docker-compose.yaml
+postgres/**
 package/*/.git
 package/*/doc
 package/*/*.egg-info

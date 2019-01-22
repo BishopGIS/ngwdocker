@@ -34,11 +34,6 @@ class PackageBase:
     def debpackages(self):
         return ()
 
-    def requirements(self):
-        fn = os.path.join('package', self.name, 'docker', 'requirements')
-        if os.path.isfile(fn):
-            return fn
-
     def envsetup(self):
         pass
 
@@ -105,14 +100,6 @@ def main(packages, ctx, mode, **kwargs):
 
     for p in packages.values():
         dockerfile.write('\n# {}\n'.format(p.name))
-
-        locfn = p.requirements()
-        if locfn is not None:
-            imgfn = os.path.join('/opt/ngw/build', p.name + "-requirements")
-            dockerfile.write(
-                'COPY {} {}'.format(locfn, imgfn),
-                'RUN /opt/ngw/env/bin/pip install --no-cache-dir -r {}'.format(imgfn))
-
         p.envsetup()
 
     dockerfile.write("\n# NEXTGISWEB PACKAGES", "")
@@ -122,6 +109,7 @@ def main(packages, ctx, mode, **kwargs):
             dockerfile.write('COPY --chown=ngw:ngw package/{pkg} /opt/ngw/package/{pkg}'.format(pkg=p.name))
             dockerfile.write('RUN /opt/ngw/env/bin/pip install --no-cache-dir -e /opt/ngw/package/{pkg}'.format(pkg=p.name))
         else:
+            # Copy only setup.py for requirements and entrypoints installation
             dockerfile.write('COPY --chown=ngw:ngw package/{pkg}/setup.py /opt/ngw/package/{pkg}/setup.py'.format(pkg=p.name))
             dockerfile.write('RUN /opt/ngw/env/bin/pip install --no-cache-dir -e /opt/ngw/package/{pkg}'.format(pkg=p.name))
 

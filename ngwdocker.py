@@ -100,7 +100,8 @@ def main(packages, ctx, mode, **kwargs):
 
     dockerfile.write(
         "# VIRTUALENV", "",
-        "RUN /usr/bin/virtualenv /opt/ngw/env")
+        "RUN /usr/bin/virtualenv /opt/ngw/env",
+        "RUN /opt/ngw/env/bin/pip install --no-cache-dir uwsgi")
 
     for p in packages.values():
         dockerfile.write('\n# {}\n'.format(p.name))
@@ -110,7 +111,7 @@ def main(packages, ctx, mode, **kwargs):
             imgfn = os.path.join('/opt/ngw/build', p.name + "-requirements")
             dockerfile.write(
                 'COPY {} {}'.format(locfn, imgfn),
-                'RUN /opt/ngw/env/bin/pip install -r {}'.format(imgfn))
+                'RUN /opt/ngw/env/bin/pip install --no-cache-dir -r {}'.format(imgfn))
 
         p.envsetup()
 
@@ -119,10 +120,10 @@ def main(packages, ctx, mode, **kwargs):
     for p in packages.values():
         if mode == Mode.PRODUCTION:
             dockerfile.write('COPY --chown=ngw:ngw package/{pkg} /opt/ngw/package/{pkg}'.format(pkg=p.name))
-            dockerfile.write('RUN /opt/ngw/env/bin/pip install -e /opt/ngw/package/{pkg}'.format(pkg=p.name))
+            dockerfile.write('RUN /opt/ngw/env/bin/pip install --no-cache-dir -e /opt/ngw/package/{pkg}'.format(pkg=p.name))
         else:
             dockerfile.write('COPY --chown=ngw:ngw package/{pkg}/setup.py /opt/ngw/package/{pkg}/setup.py'.format(pkg=p.name))
-            dockerfile.write('RUN /opt/ngw/env/bin/pip install -e /opt/ngw/package/{pkg}'.format(pkg=p.name))
+            dockerfile.write('RUN /opt/ngw/env/bin/pip install --no-cache-dir -e /opt/ngw/package/{pkg}'.format(pkg=p.name))
 
     dockerfile.write("\n# FINALIZE\n")
 
@@ -153,7 +154,7 @@ def main(packages, ctx, mode, **kwargs):
 
     svc['app'] = OrderedDict(
         build=OrderedDict(context=".", args=bargs),
-        command="pserve-development",
+        command="pserve-development" if mode == Mode.DEVELOPMENT else 'uwsgi-production',
         depends_on=['postgres'],
         volumes=['data:/opt/ngw/data'] + srcvol,
         ports=['8080:8080'],

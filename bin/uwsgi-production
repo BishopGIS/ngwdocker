@@ -1,0 +1,3 @@
+#!/bin/bash
+set -e
+exec /opt/ngw/env/bin/uwsgi --ini /opt/ngw/config/uwsgi.ini

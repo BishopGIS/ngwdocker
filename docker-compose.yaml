@@ -3,15 +3,12 @@ services:
   app:
     build:
       context: .
-      args:
-        uid: 1000
-        gid: 1000
-    command: pserve-development
+      args: {}
+    command: uwsgi-production
     depends_on:
     - postgres
     volumes:
     - data:/opt/ngw/data
-    - ./package:/opt/ngw/package
     ports:
     - 8080:8080
   postgres:

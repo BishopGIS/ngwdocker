@@ -3,18 +3,24 @@ services:
   app:
     build:
       context: .
-      args: {}
-    command: uwsgi-production
+      args:
+        uid: 1000
+        gid: 1000
+    command: pserve-development
+    environment:
+      NEXTGISWEB_CORE_DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      NEXTGISWEB_PYRAMID_SECRET: ${SESSION_SECRET}
     depends_on:
     - postgres
     volumes:
     - data:/opt/ngw/data
+    - ./package:/opt/ngw/package
     ports:
     - 8080:8080
   postgres:
     build:
       context: ./postgres
     environment:
-      POSTGRES_USER: ngw
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
 volumes:
   data: {}

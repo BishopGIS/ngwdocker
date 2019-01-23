@@ -4,6 +4,9 @@ from collections import OrderedDict
 from io import StringIO
 import os
 import os.path
+from datetime import datetime
+import random
+import string
 from enum import Enum
 import yaml
 import click
@@ -52,6 +55,35 @@ def load_packages():
         spec.loader.exec_module(module)
         packages[p] = module.Package(p)
     return packages
+
+
+def read_envfile(fn='.env'):
+    result = dict()
+    if os.path.isfile(fn):
+        with open(fn, 'r') as fp:
+            for l in fp:
+                var, val = l.rstrip('\n').split('=', 1)
+                result[var] = val
+    return result
+
+
+def write_envfile(values, fn='.env'):
+    # Keep original file backup on content changes
+    original = read_envfile(fn)
+    if original != values and original != dict():
+        suffix = datetime.now().replace(microsecond=0).isoformat() \
+            .replace(':', '').replace('-', '').replace('T', '-')
+        os.rename(fn, fn + '-' + suffix)
+
+    # Write new file contents
+    with open(fn, 'w') as fd:
+        for k, v in values.items():
+            fd.write('{}={}\n'.format(k, v))
+
+
+def pwgen(length=16):
+    return ''.join(random.SystemRandom().choice(
+        string.ascii_letters + string.digits) for _ in range(16))
 
 
 def main(packages, ctx, mode, **kwargs):
@@ -134,15 +166,29 @@ def main(packages, ctx, mode, **kwargs):
         fd.write(dockerfile.buf.getvalue())
 
     dcomp = OrderedDict(version="3.2")
+    envfile = read_envfile()
+
     dcomp['services'] = svc = OrderedDict()
     dcomp['volumes'] = vlm = OrderedDict()
 
+    # Service: app
+
     srcvol = ["./package:/opt/ngw/package"] if mode == Mode.DEVELOPMENT else []
-    bargs = OrderedDict(uid=os.getuid(), gid=os.getgid()) if mode == Mode.DEVELOPMENT else {}
+    bargs = OrderedDict(uid=os.getuid(), gid=os.getgid()) \
+        if mode == Mode.DEVELOPMENT else {}
+
+    if 'SESSION_SECRET' not in envfile:
+        envfile['SESSION_SECRET'] = pwgen()
+
+    if 'DATABASE_PASSWORD' not in envfile:
+        envfile['DATABASE_PASSWORD'] = pwgen()
 
     svc['app'] = OrderedDict(
         build=OrderedDict(context=".", args=bargs),
         command="pserve-development" if mode == Mode.DEVELOPMENT else 'uwsgi-production',
+        environment=OrderedDict(
+            NEXTGISWEB_CORE_DATABASE_PASSWORD="${DATABASE_PASSWORD}",
+            NEXTGISWEB_PYRAMID_SECRET="${SESSION_SECRET}"),
         depends_on=['postgres'],
         volumes=['data:/opt/ngw/data'] + srcvol,
         ports=['8080:8080'],
@@ -151,7 +197,7 @@ def main(packages, ctx, mode, **kwargs):
 
     svc['postgres'] = OrderedDict(
         build=OrderedDict(context='./postgres'),
-        environment=OrderedDict(POSTGRES_USER='ngw')
+        environment=OrderedDict(POSTGRES_PASSWORD="${DATABASE_PASSWORD}")
     )
 
     if ctx.params['minio']:
@@ -163,6 +209,8 @@ def main(packages, ctx, mode, **kwargs):
         return dumper.represent_dict(data.items())
 
     yaml.add_representer(OrderedDict, dict_representer)
+
+    write_envfile(envfile)
 
     with open('docker-compose.yaml', 'w') as fd:
         yaml.dump(dcomp, fd, default_flow_style=False)

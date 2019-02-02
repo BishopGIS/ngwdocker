@@ -104,7 +104,9 @@ def main(packages, ctx, mode, **kwargs):
             'virtualenv', 'python-virtualenv'))]
 
     for p in packages.values():
-        debpackages.append((p.name, p.debpackages()))
+        pkgs = p.debpackages()
+        if len(pkgs) > 0:
+            debpackages.append((p.name, p.debpackages()))
 
     line = "RUN apt-get update && \\\n" \
            "    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \\\n"

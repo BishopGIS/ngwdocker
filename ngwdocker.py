@@ -140,14 +140,23 @@ def main(packages, ctx, mode, **kwargs):
 
     for p in packages.values():
         if mode == Mode.PRODUCTION:
-            dockerfile.write('COPY --chown=ngw:ngw package/{pkg} /opt/ngw/package/{pkg}'.format(pkg=p.name))
-            dockerfile.write('RUN /opt/ngw/env/bin/pip install --no-cache-dir -e /opt/ngw/package/{pkg}'.format(pkg=p.name))
+            dockerfile.write(
+                "COPY --chown=ngw:ngw package/{pkg} /opt/ngw/package/{pkg}".format(pkg=p.name),
+                "RUN /opt/ngw/env/bin/pip install --no-cache-dir -e /opt/ngw/package/{pkg}".format(pkg=p.name))
         else:
             # Copy only setup.py for requirements and entrypoints installation
-            dockerfile.write('COPY --chown=ngw:ngw package/{pkg}/setup.py /opt/ngw/package/{pkg}/setup.py'.format(pkg=p.name))
-            dockerfile.write('RUN /opt/ngw/env/bin/pip install --no-cache-dir -e /opt/ngw/package/{pkg}'.format(pkg=p.name))
+            dockerfile.write(
+                "COPY --chown=ngw:ngw package/{pkg}/setup.py /opt/ngw/package/{pkg}/setup.py".format(pkg=p.name),
+                "RUN /opt/ngw/env/bin/pip install --no-cache-dir -e /opt/ngw/package/{pkg}".format(pkg=p.name))
 
-    dockerfile.write("\n# FINALIZE\n")
+        dockerfile.write("")
+
+    if mode == Mode.PRODUCTION:
+        dockerfile.write(
+            "RUN /opt/ngw/env/bin/nextgisweb-i18n compile",
+            "")
+    
+    dockerfile.write("# FINALIZE", "")
 
     dockerfile.write(
         "COPY docker-entrypoint.sh /",
@@ -199,8 +208,10 @@ def main(packages, ctx, mode, **kwargs):
 
     svc['postgres'] = OrderedDict(
         build=OrderedDict(context='./postgres'),
-        environment=OrderedDict(POSTGRES_PASSWORD="${DATABASE_PASSWORD}")
+        environment=OrderedDict(POSTGRES_PASSWORD="${DATABASE_PASSWORD}"),
+        volumes=['postgres:/var/lib/postgresql/data']
     )
+    vlm['postgres'] = OrderedDict()
 
     if ctx.params['minio']:
         svc['minio'] = OrderedDict(

@@ -37,7 +37,7 @@ Generate `Dockerfile` and `docker-compose.yaml`:
 
 Start postgres and initialize database structure:
 
-    $ docker-compose up --detach postgres
+    $ docker-compose up -d postgres
     # Wait 5-10 seconds for PostgreSQL start
     $ docker-compose run app nextgisweb initialize_db
 

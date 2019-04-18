@@ -1,7 +1,17 @@
 import sys
-import importlib.util
+
+python3 = True
+try:
+    import importlib.util
+except ImportError:
+    python3 = False
+    import imp
+
 from collections import OrderedDict
-from io import StringIO
+if python3:
+    from io import StringIO
+else:
+    from io import BytesIO as StringIO
 import os
 import os.path
 from datetime import datetime
@@ -40,6 +50,18 @@ class PackageBase:
     def envsetup(self):
         pass
 
+def load_module(module_name, filename):
+    try:
+        if python3:
+            spec = importlib.util.spec_from_file_location(module_name, filename)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+        else:
+            module = imp.load_source(module_name.split('.')[-1], filename)
+            return module
+    except:
+        return None
 
 def load_packages():
     pkgnames = sorted(filter(
@@ -48,12 +70,12 @@ def load_packages():
 
     packages = OrderedDict()
     for p in pkgnames:
-        spec = importlib.util.spec_from_file_location(
+        module = load_module(
             '{}.docker'.format(p),
-            os.path.join('package', p, 'docker.py'))
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        packages[p] = module.Package(p)
+            os.path.join('package', p, 'docker.py')
+        )
+        if module is not None:
+            packages[p] = module.Package(p)
     return packages
 
 
@@ -155,7 +177,7 @@ def main(packages, ctx, mode, **kwargs):
         dockerfile.write(
             "RUN /opt/ngw/env/bin/nextgisweb-i18n compile",
             "")
-    
+
     dockerfile.write("# FINALIZE", "")
 
     dockerfile.write(

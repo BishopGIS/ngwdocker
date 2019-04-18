@@ -221,7 +221,8 @@ def main(packages, ctx, mode, **kwargs):
         command="pserve-development" if mode == Mode.DEVELOPMENT else 'uwsgi-production',
         environment=OrderedDict(
             NEXTGISWEB_CORE_DATABASE_PASSWORD="${DATABASE_PASSWORD}",
-            NEXTGISWEB_PYRAMID_SECRET="${SESSION_SECRET}"),
+            NEXTGISWEB_PYRAMID_SECRET="${SESSION_SECRET}",
+            NEXTGISWEB_DEFAULT_LOCALE="ru"),
         depends_on=['postgres'],
         volumes=['data:/opt/ngw/data'] + srcvol,
         ports=['8080:8080'],

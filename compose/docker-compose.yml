@@ -1,0 +1,24 @@
+version: '3.2'
+services:
+  app:
+    image: registry.nextgis.com/nextgisweb:latest
+    depends_on:
+    - postgres
+    environment:
+      NEXTGISWEB_PYRAMID_SECRET: ${SESSION_SECRET}
+      NEXTGISWEB_CORE_DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      NEXTGISWEB_DEFAULT_LOCALE: ru
+    command: uwsgi-production
+    volumes:
+    - data:/opt/ngw/data
+    ports:
+    - 8080:8080
+  postgres:
+    image: registry.nextgis.com/postgis:latest
+    environment:
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    volumes:
+    - postgres:/var/lib/postgresql/data
+volumes:
+  data: {}
+  postgres: {}

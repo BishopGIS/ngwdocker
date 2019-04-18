@@ -33,17 +33,11 @@ Clone or copy other `nextgisweb_*` packages to same directory. For example `next
 
 Generate `Dockerfile` and `docker-compose.yaml`:
 
-    $ python3 ngwdocker.py
+    $ python ngwdocker.py
 
-Start postgres and initialize database structure:
+Start NextGIS Web:
 
-    $ docker-compose up -d postgres
-    # Wait 5-10 seconds for PostgreSQL start
-    $ docker-compose run app nextgisweb initialize_db
-
-Start webserver:
-
-    $ docker-compose up app
+    $ docker-compose up
 
 Go to http://localhost:8080 in browser.
 

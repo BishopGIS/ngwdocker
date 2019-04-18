@@ -10,4 +10,10 @@ if [ "$NGWDOCKER_MODE" = "development" ]; then
     done
 fi
 
+until nextgisweb initialize_db
+do
+    echo "Can't initialize yet. Waiting for database ready?"
+    sleep 1
+done
+
 exec "$@"
